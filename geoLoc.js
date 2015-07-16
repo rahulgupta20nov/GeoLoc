@@ -9,9 +9,8 @@ app.controller("appCtrl", function ($scope) {
 
     $scope.gotoCurrentLocation = function () {
         if ("geolocation" in navigator) {
-            
-            navigator.geolocation.getCurrentPosition(function (position) {
-            	//console.log(position);
+            navigator.geolocation.watchPosition(function (position) {
+                //console.log(position);
                 var c = position.coords;
                 var latlng = new google.maps.LatLng(c.latitude, c.longitude);
                 var geocoder = new google.maps.Geocoder();
@@ -34,7 +33,6 @@ app.controller("appCtrl", function ($scope) {
     };
 
     $scope.gotoLocation = function (lat, lon, acc) {
-        console.log(acc);
         if ($scope.lat != lat || $scope.lon != lon) {
             $scope.loc = { lat: lat, lon: lon, accuracy: acc};
             if (!$scope.$$phase) $scope.$apply("loc");
