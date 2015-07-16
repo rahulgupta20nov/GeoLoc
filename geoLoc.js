@@ -4,23 +4,26 @@ app.controller("appCtrl", function ($scope) {
     $scope.address = {};
     $scope.position = {};
     // current location
-    $scope.loc = { lat: 23, lon: 79 };
+    $scope.accuracy = 0;
+    $scope.loc = { lat: 23, lon: 79};
 
     $scope.gotoCurrentLocation = function () {
         if ("geolocation" in navigator) {
             
             navigator.geolocation.getCurrentPosition(function (position) {
-            	console.log(position);
+            	//console.log(position);
                 var c = position.coords;
                 var latlng = new google.maps.LatLng(c.latitude, c.longitude);
                 var geocoder = new google.maps.Geocoder();
 
             	geocoder.geocode({'latLng': latlng}, function(results, status){
             		$scope.address = results;
-            		console.log(results);
-            		console.log(status);
+                    $scope.specificAdd = results[0]['address_components'];
+            		//console.log(results);
+            		//console.log(status);
             	});
 
+                $scope.accuracy = c.accuracy;
                 $scope.gotoLocation(c.latitude, c.longitude);
                 $scope.position = position.coords;
                 $scope.cities.push({lat : c.latitude,   lon : c.longitude});
@@ -30,9 +33,10 @@ app.controller("appCtrl", function ($scope) {
         return false;
     };
 
-    $scope.gotoLocation = function (lat, lon) {
+    $scope.gotoLocation = function (lat, lon, acc) {
+        console.log(acc);
         if ($scope.lat != lat || $scope.lon != lon) {
-            $scope.loc = { lat: lat, lon: lon };
+            $scope.loc = { lat: lat, lon: lon, accuracy: acc};
             if (!$scope.$$phase) $scope.$apply("loc");
         }
     };
@@ -45,11 +49,11 @@ app.controller("appCtrl", function ($scope) {
             this.geocoder.geocode({ 'address': $scope.search }, function (results, status) {
                 if (status == google.maps.GeocoderStatus.OK) {
                     var loc = results[0].geometry.location;
-                    console.log(results);
+                    //console.log(results);
                     $scope.search = results[0].formatted_address;
                     $scope.gotoLocation(loc.lat(), loc.lng());
-                    $scope.cities.push({lat : loc.lat(),   lon : loc.lng()});
-                    console.log($scope.cities);
+                    //$scope.cities.push({lat : loc.lat(),   lon : loc.lng()});
+                    //console.log($scope.cities);
                 } else {
                     alert("Sorry, this search produced no results.");
                 }
