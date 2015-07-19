@@ -23,10 +23,7 @@
     </div>
 
     <!-- map -->
-    <app-map style="height:400px;margin:12px;box-shadow:0 3px 25px black;"
-        center="loc"
-    > 
-    </app-map>
+    <app-map style="height:400px;margin:12px;box-shadow:0 3px 25px black;" center="loc"></app-map>
 
     <!-- current location -->
     <br>
@@ -37,13 +34,7 @@
         Lat: {{loc.lat}},<br> Lon: {{loc.lon}},<br> Accuracy: {{accuracy}}
     </div>
 
-    <!-- list of airports -->
     <div class="container-fluid">
-        <!--<div class="span3 btn"
-            ng-repeat="a in cities"
-            ng-click="gotoLocation(a.lat, a.lon)">
-            <b>{{a.place}}</b>: {{a.desc}}
-        </div>-->
         <div>
             <h3>Address: {{address[0]['formatted_address']}}</h3>
         </div>

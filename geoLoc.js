@@ -1,23 +1,24 @@
 var app = angular.module("app", []);
 
+var currentLocation = false;
 app.controller("appCtrl", function ($scope) {
     $scope.address = {};
     $scope.position = {};
     // current location
     $scope.accuracy = 0;
     $scope.loc = { lat: 23, lon: 79};
+    var geocoder = new google.maps.Geocoder();
 
     $scope.gotoCurrentLocation = function () {
         if ("geolocation" in navigator) {
-            navigator.geolocation.watchPosition(function (position) {
-                //console.log(position);
+            navigator.geolocation.getCurrentPosition(function (position) {
                 var c = position.coords;
                 var latlng = new google.maps.LatLng(c.latitude, c.longitude);
-                var geocoder = new google.maps.Geocoder();
 
-            	geocoder.geocode({'latLng': latlng}, function(results, status){
+            	geocoder.geocode({'latLng': latlng}, function(results){
             		$scope.address = results;
                     $scope.specificAdd = results[0]['address_components'];
+                    $scope.$digest();
             		//console.log(results);
             		//console.log(status);
             	});
@@ -25,8 +26,8 @@ app.controller("appCtrl", function ($scope) {
                 $scope.accuracy = c.accuracy;
                 $scope.gotoLocation(c.latitude, c.longitude);
                 $scope.position = position.coords;
-                $scope.cities.push({lat : c.latitude,   lon : c.longitude});
             });
+            currentLocation = true;
             return true;
         }
         return false;
@@ -38,10 +39,11 @@ app.controller("appCtrl", function ($scope) {
             if (!$scope.$$phase) $scope.$apply("loc");
         }
     };
-
+    $scope.gotoCurrentLocation();
     // geo-coding
     $scope.search = "";
     $scope.geoCode = function () {
+        currentLocation = false;
         if ($scope.search && $scope.search.length > 0) {
             if (!this.geocoder) this.geocoder = new google.maps.Geocoder();
             this.geocoder.geocode({ 'address': $scope.search }, function (results, status) {
@@ -59,38 +61,6 @@ app.controller("appCtrl", function ($scope) {
         }
     };
 
- $scope.cities = [
-              {
-                  place : 'India',
-                  desc : 'A country of culture and tradition!',
-                  lat : 23.200000,
-                  lon : 79.225487
-              },
-              {
-                  place : 'New Delhi',
-                  desc : 'Capital of India...',
-                  lat : 28.500000,
-                  lon : 77.250000
-              },
-              {
-                  place : 'Kolkata',
-                  desc : 'City of Joy...',
-                  lat : 22.500000,
-                  lon : 88.400000
-              },
-              {
-                  place : 'Mumbai',
-                  desc : 'Commercial city!',
-                  lat : 19.000000,
-                  lon : 72.90000
-              },
-              {
-                  place : 'Bangalore',
-                  desc : 'Silicon Valley of India...',
-                  lat : 12.9667,
-                  lon : 77.5667
-              }
-          ];
 });
 
 // formats a number as a latitude (e.g. 40.46... => "40°27'44"N")
@@ -142,6 +112,7 @@ app.directive("appMap", function () {
             var toResize, toCenter;
             var map;
             var currentMarkers;
+            var centerMarker;
 
             // listen to changes in scope variables and update the control
             var arr = ["width", "height", "markers", "mapTypeId", "panControl", "zoomControl", "scaleControl"];
@@ -158,10 +129,18 @@ app.directive("appMap", function () {
             scope.$watch("zoom", function () {
                 if (map && scope.zoom)
                     map.setZoom(scope.zoom * 1);
+                //console.log("Success");
+                updateMarkers();
+                /*if (centerMarker != null) centerMarker.setMap(null);
+                centerMarker = new google.maps.Marker({
+                    position: new google.maps.LatLng(scope.center.lat, scope.center.lon),
+                    map: map
+                });*/
             });
             scope.$watch("center", function () {
                 if (map && scope.center)
                     map.setCenter(getLocation(scope.center));
+                updateMarkers();
             });
 
             // update the control
@@ -175,7 +154,7 @@ app.directive("appMap", function () {
                 var options =
                 {
                     center: new google.maps.LatLng(23, 79),
-                    zoom: 15,
+                    zoom: currentLocation ? 16 : 10,
                     mapTypeId: "roadmap"
                 };
                 if (scope.center) options.center = getLocation(scope.center);
@@ -187,12 +166,11 @@ app.directive("appMap", function () {
 
                 // create the map
                 map = new google.maps.Map(element[0], options);
-
                 // update markers
                 updateMarkers();
 
                 // listen to changes in the center property and update the scope
-                google.maps.event.addListener(map, 'center_changed', function () {
+                /*google.maps.event.addListener(map, 'center_changed', function () {
 
                     // do not update while the user pans or zooms
                     if (toCenter) clearTimeout(toCenter);
@@ -209,12 +187,41 @@ app.directive("appMap", function () {
                             }
                         }
                     }, 500);
-                });
+                });*/
             }
 
             // update map markers to match scope marker collection
             function updateMarkers() {
-                if (map && scope.markers) {
+
+                if(centerMarker != null) centerMarker.setMap(null);
+
+                centerMarker = new google.maps.Marker({
+                    position: new google.maps.LatLng(scope.center.lat, scope.center.lon),
+                    map: map,
+                    animation: google.maps.Animation.DROP,
+
+                    strokeColor: '#FF0000',
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+
+                    icon: currentLocation ?
+                        //'http://maps.google.com/mapfiles/kml/pal4/icon25.png'
+                            new google.maps.MarkerImage('//maps.gstatic.com/mapfiles/mobile/mobileimgs2.png',
+                            new google.maps.Size(22,22),
+                            new google.maps.Point(0,18),
+                            new google.maps.Point(11,11))
+                        : '',
+                    shadow: null,
+                    zIndex: 999,
+                    clickable: true
+                });
+                /*if(currentMarkers)
+                    currentMarkers['icon'] = new google.maps.MarkerImage('//maps.gstatic.com/mapfiles/mobile/mobileimgs2.png',
+                        new google.maps.Size(22,22),
+                        new google.maps.Point(0,18),
+                        new google.maps.Point(11,11));
+                console.log(centerMarker);*/
+                /*if (map && scope.markers) {
 
                     // clear old markers
                     if (currentMarkers != null) {
@@ -227,6 +234,7 @@ app.directive("appMap", function () {
                     currentMarkers = [];
                     console.log(scope.markers);
                     var markers = scope.markers;
+                    console.log(marker);
                     if (angular.isString(markers)) markers = scope.$eval(scope.markers);
                     for (var i = 0; i < markers.length; i++) {
                         var m = markers[i];
@@ -234,7 +242,7 @@ app.directive("appMap", function () {
                         var mm = new google.maps.Marker({ position: loc, map: map, title: m.name });
                         currentMarkers.push(mm);
                     }
-                }
+                }*/
             }
 
             // convert current location to Google maps location
