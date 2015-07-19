@@ -13,7 +13,7 @@ app.controller("appCtrl", function ($scope) {
         if ("geolocation" in navigator) {
             var id;
             if(id) navigator.geolocation.clearWatch(id);
-            id = navigator.geolocation.watchPosition(function (position) {
+            id = navigator.geolocation.getCurrentPosition(function (position) {
                 var c = position.coords;
                 var latlng = new google.maps.LatLng(c.latitude, c.longitude);
 
@@ -29,7 +29,7 @@ app.controller("appCtrl", function ($scope) {
                 $scope.gotoLocation(c.latitude, c.longitude);
                 $scope.position = position.coords;
             });
-            console.log(id);
+            //console.log(id);
             currentLocation = true;
             return true;
         }
@@ -132,7 +132,7 @@ app.directive("appMap", function () {
             scope.$watch("zoom", function () {
                 if (map && scope.zoom)
                     map.setZoom(scope.zoom * 1);
-                //console.log("Success");
+                //console.log("Success");watchPosition
                 updateMarkers();
                 /*if (centerMarker != null) centerMarker.setMap(null);
                 centerMarker = new google.maps.Marker({
