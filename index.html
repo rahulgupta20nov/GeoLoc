@@ -1,42 +1,67 @@
 <!DOCTYPE html>
-<body ng-app="app" ng-controller="appCtrl">
-<script
-    src="angular.min.js"></script>
+<head>
+    <title>Google API</title>
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+</head>
+<body ng-app="app" ng-controller="appCtrl" class="container">
 <!-- <script
     src="http://maps.googleapis.com/maps/api/js?sensor=false&language=en"></script> -->
-    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true"></script>
 
-  <script type="text/javascript" src="geoLoc.js"></script>
+
+<script src="bower_components/jquery/dist/jquery.min.js"></script>
+<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="angular.min.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true"></script>
+
+
+<script type="text/javascript" src="geoLoc.js"></script>
 <h3>Google Maps</h3>
+<br><br><br>
+<ul class="nav nav-tabs" role="tablist">
+    <li ng-repeat="t in tabs" role="presentation" ng-class="{'active': t == tab}">
+        <a aria-controls="{{t}}" role="tab" data-toggle="tab" ng-click="changeTab(t)">{{t}}</a>
+    </li>
+</ul>
+<br><br>
 
-    <!-- search/go to current location -->
-    <div class="text-right">
-        <div class="input-append text-right">
-            <input type="text" ng-model="search"/>
-            <button class="btn" type="button" ng-click="geoCode()" ng-disabled="search.length == 0" title="search" >
-              &nbsp;<i class="icon-search"></i>Where is this place?
-            </button>
-            <button class="btn" type="button" ng-click="gotoCurrentLocation()" title="current location">
-              &nbsp;<i class="icon-home"></i>Where am I now?
-            </button>
-        </div>
+<!-- search/go to current location -->
+<div class="text-right" class="container" style="margin-left: 11px;">
+    <div class="input-append text-left">
+        <input type="text" ng-model="search" class="col-lg-3 col-md-2 col-sm-2 col-xs-2 text-left"
+               placeholder="Search By Place Name" style="margin-right: 20px;  height: 35px; width: 180px;"/>
+        <button class="btn btn-primary" type="button" ng-click="geoCode()" ng-disabled="search.length == 0" title="search" style="margin-right: 15px;">
+            &nbsp;<i class="icon-search"></i>Where is this place?
+        </button>
+        <button class="btn btn-success" type="button" ng-click="gotoCurrentLocation()" title="current location">
+            &nbsp;<i class="icon-home"></i>Where am I now?
+        </button>
     </div>
+</div>
+<br>
+<!-- map -->
+<app-map style="height:400px;margin:12px;box-shadow:0 3px 25px black;" center="loc"></app-map>
 
-    <!-- map -->
-    <app-map style="height:400px;margin:12px;box-shadow:0 3px 25px black;" center="loc"></app-map>
+<!-- current location -->
+<br>
+<table class="table table-hover col-lg-2 col-md-2 col-sm-2" style="margin-left: 10px;">
+    <tr class="info">
+        <td class="col-sm-1 col-md-1 col-xs-1 col-lg-1">Lat:</td><td>{{loc.lat | lat:0}}</td>
+    </tr>
+    <tr class="info">
+        <td>Lon:</td><td>{{loc.lon | lon:0}}</td>
+    </tr>
+    <tr class="info">
+        <td>Lat:</td><td>{{loc.lat}}</td>
+    </tr>
+    <tr class="info">
+        <td>Lon:</td><td>{{loc.lon}}</td>
+    </tr>
+    <tr class="info">
+        <td>Accuracy:</td><td>{{accuracy}}</td>
+    </tr>
+    <tr class="info">
+        <td>Address:</td><td class="col-lg-4 col-md-4 col-sm-4">{{address[0]['formatted_address']}}</td>
+    </tr>
+</table>
 
-    <!-- current location -->
-    <br>
-    <div class="text-info text-right">
-        Lat: {{loc.lat | lat:0}},<br> Lon: {{loc.lon | lon:0}}
-    </div><br>
-    <div class="text-info text-right">
-        Lat: {{loc.lat}},<br> Lon: {{loc.lon}},<br> Accuracy: {{accuracy}}
-    </div>
-
-    <div class="container-fluid">
-        <div>
-            <h3>Address: {{address[0]['formatted_address']}}</h3>
-        </div>
-    </div>
 </body>
