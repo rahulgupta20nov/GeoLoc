@@ -11,7 +11,9 @@ app.controller("appCtrl", function ($scope) {
 
     $scope.gotoCurrentLocation = function () {
         if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(function (position) {
+            var id;
+            if(id) navigator.geolocation.clearWatch(id);
+            id = navigator.geolocation.watchPosition(function (position) {
                 var c = position.coords;
                 var latlng = new google.maps.LatLng(c.latitude, c.longitude);
 
@@ -27,6 +29,7 @@ app.controller("appCtrl", function ($scope) {
                 $scope.gotoLocation(c.latitude, c.longitude);
                 $scope.position = position.coords;
             });
+            console.log(id);
             currentLocation = true;
             return true;
         }
@@ -206,10 +209,7 @@ app.directive("appMap", function () {
 
                     icon: currentLocation ?
                         //'http://maps.google.com/mapfiles/kml/pal4/icon25.png'
-                            new google.maps.MarkerImage('//maps.gstatic.com/mapfiles/mobile/mobileimgs2.png',
-                            new google.maps.Size(22,22),
-                            new google.maps.Point(0,18),
-                            new google.maps.Point(11,11))
+                        'pin-lost.png'
                         : '',
                     shadow: null,
                     zIndex: 999,
