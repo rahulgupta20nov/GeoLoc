@@ -2,19 +2,20 @@
 <head>
     <title>Google API</title>
     <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body ng-app="app" ng-controller="appCtrl" class="container">
 <!-- <script
     src="http://maps.googleapis.com/maps/api/js?sensor=false&language=en"></script> -->
 
 
-<script src="bower_components/jquery/dist/jquery.min.js"></script>
-<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-<script src="angular.min.js"></script>
+<!--<script src="bower_components/jquery/dist/jquery.min.js"></script>-->
+<!--<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>-->
+<script src="js/angular.min.js"></script>
 <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true"></script>
 
 
-<script type="text/javascript" src="geoLoc.js"></script>
+<script type="text/javascript" src="js/geoLoc.js"></script>
 <h3>Google Maps</h3>
 <br><br><br>
 <ul class="nav nav-tabs" role="tablist">
@@ -23,23 +24,36 @@
     </li>
 </ul>
 <br><br>
-
 <!-- search/go to current location -->
-<div class="text-right" class="container" style="margin-left: 11px;">
+<div id="search-place" class="text-right" class="container" style="margin-left: 11px;" ng-show="tab == tabs[0]">
     <div class="input-append text-left">
-        <input type="text" ng-model="search" class="col-lg-3 col-md-2 col-sm-2 col-xs-2 text-left"
-               placeholder="Search By Place Name" style="margin-right: 20px;  height: 35px; width: 180px;"/>
-        <button class="btn btn-primary" type="button" ng-click="geoCode()" ng-disabled="search.length == 0" title="search" style="margin-right: 15px;">
-            &nbsp;<i class="icon-search"></i>Where is this place?
-        </button>
-        <button class="btn btn-success" type="button" ng-click="gotoCurrentLocation()" title="current location">
+        <span class="col-sm-4">
+            <input type="text" ng-model="search" class="col-lg-3 col-md-2 col-sm-2 col-xs-2 text-left"
+                   placeholder="Search By Place Name" style="margin-right: 20px;  height: 35px;"/>
+        </span>
+
+        <span class="col-sm-4 text-center">
+            <button class="btn btn-primary" type="button" ng-click="geoCode()" ng-disabled="search.length == 0" title="search" style="margin-right: 15px;">
+                &nbsp;<i class="icon-search"></i>Where is this place?
+            </button>
+
+            <button class="btn btn-success" type="button" ng-click="gotoCurrentLocation()" title="current location">
             &nbsp;<i class="icon-home"></i>Where am I now?
-        </button>
+            </button>
+        </span>
+
+
     </div>
 </div>
 <br>
 <!-- map -->
-<app-map style="height:400px;margin:12px;box-shadow:0 3px 25px black;" center="loc"></app-map>
+
+<div class="col-sm-12 map-wrapper" ng-class="{'sameLevelMap': tab == tabs[1]}">
+    <app-map style="height:400px;margin-left:12px;box-shadow:0 3px 25px black;" center="loc"></app-map>
+</div>
+<!--<div class="sameLevelMap" ng-show="tab == tabs[1]">
+    <app-map style="height:400px;margin-left:12px;box-shadow:0 3px 25px black;" center="loc"></app-map>
+</div>-->
 
 <!-- current location -->
 <br>
