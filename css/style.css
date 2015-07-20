@@ -16,14 +16,13 @@
     padding-right: 0;
 }
 
-@media screen and (max-width: 510px){
-    #search-place > .input-append > span > input[type="text"] {
-
-        margin-bottom: 10px;
+@media screen and (max-width: 520px){
+    #search-place > .input-append > span{
+        width: 98%;
+        max-width: 98%;
+        margin: 5px auto;
     }
-
-    #search-place > .input-append > .btn-success{
-        float: right;
-        margin-right: 20px;
+    #search-place > .input-append > span > input[type="text"] {
+        width: 100%;
     }
 }
