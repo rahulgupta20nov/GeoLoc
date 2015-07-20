@@ -20,9 +20,32 @@ app.controller("appCtrl", function ($scope) {
 
     $scope.gotoCurrentLocation = function () {
         if ("geolocation" in navigator) {
+            var option = {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                frequency: 3000,
+                maximumAge: 0
+            };
+            function error(error){
+                switch(error.code){
+                    case 1:
+                        alert('permission denied');
+                        break;
+                    case 2:
+                        alert('position unavailable');
+                        break;
+                    case 3:
+                        alert('timeout');
+                        break;
+                    default:
+                        alert('unknown error');
+                        break;
+                }
+            }
 
             //console.log($scope.tab == $scope.tabs[0] ? 'getCurrentPosition' : 'watchPosition');
             id = navigator.geolocation[$scope.tab == $scope.tabs[0] ? 'getCurrentPosition' : 'watchPosition'](function (position) {
+                //console.log(position);
                 var c = position.coords;
                 var latlng = new google.maps.LatLng(c.latitude, c.longitude);
 
@@ -35,7 +58,8 @@ app.controller("appCtrl", function ($scope) {
                 $scope.accuracy = c.accuracy;
                 $scope.gotoLocation(c.latitude, c.longitude);
                 $scope.position = position.coords;
-            });
+            }, error, option);
+
             //console.log(id);
             currentLocation = true;
             return true;
@@ -181,9 +205,9 @@ app.directive("appMap", function () {
             function updateMarkers() {
 
                 if(centerMarker != null) centerMarker.setMap(null);
-                console.log(currentLocation)
-                console.log(scope.$parent.tab == scope.$parent.tabs[0] ? (currentLocation ?
-                    'location_map_pin_light_blue3_small.png' : '') : '50px-Wikimap-blue-dot.png')
+                //console.log(currentLocation)
+                //console.log(scope.$parent.tab == scope.$parent.tabs[0] ? (currentLocation ?
+                //    'location_map_pin_light_blue3_small.png' : '') : '50px-Wikimap-blue-dot.png')
                 centerMarker = new google.maps.Marker({
                     position: new google.maps.LatLng(scope.center.lat, scope.center.lon),
                     map: map,
