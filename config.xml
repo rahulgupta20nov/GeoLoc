@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<widget xmlns   = "http://www.w3.org/ns/widgets"
+        xmlns:gap   = "http://phonegap.com/ns/1.0"
+        id          = "org.jacktrade.geoloc"
+        versionCode = "10"
+        version     = "1.1.0" >
+
+    <!-- versionCode is optional and Android only -->
+
+    <name>GeoLoc</name>
+    <icon src="images/mapsdata-icon.png" />
+
+    <description>
+        Geo Location Demo
+    </description>
+
+    <author email="rahul.jacktrade001@gmail.com">
+        Rahul Gupta
+    </author>
+    <gap:splash src="images/lloyd2.png"/>
+    <gap:platform name="ios" />
+    <gap:platform name="android" />
+    <feature name="http://api.phonegap.com/1.0/geolocation"/>
+    <feature name="http://api.phonegap.com/1.0/notification"/>
+    <feature name="http://api.phonegap.com/1.0/network"/>
+</widget>
+

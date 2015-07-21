@@ -1,7 +1,7 @@
 var app = angular.module("app", []);
 
 var currentLocation = false;
-app.controller("appCtrl", function ($scope) {
+app.controller("appCtrl", function ($scope, $interval) {
     $scope.address = {};
     $scope.position = {};
     // current location
@@ -10,6 +10,7 @@ app.controller("appCtrl", function ($scope) {
     $scope.search = "";
     $scope.tabs = ['Current Location', 'Watch Location', 'Navigation'];
     $scope.tab = $scope.tabs[0];
+
     $scope.changeTab = function (tab) {
         $scope.tab = tab;
         if(id) navigator.geolocation.clearWatch(id);
@@ -17,16 +18,16 @@ app.controller("appCtrl", function ($scope) {
     }
     var geocoder = new google.maps.Geocoder();
     var id;
-
+    var stopTime;
     $scope.gotoCurrentLocation = function () {
         if ("geolocation" in navigator) {
             var option = {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                frequency: 3000,
-                maximumAge: 0
+                enableHighAccuracy: false,
+                timeout: 15000,
+                maximumAge: 2000
             };
-            function error(error){
+            var error = function (error){
+                navigator.geolocation.clearWatch(id);
                 switch(error.code){
                     case 1:
                         alert('permission denied');
@@ -41,26 +42,46 @@ app.controller("appCtrl", function ($scope) {
                         alert('unknown error');
                         break;
                 }
+                calling();
+            }
+            var success = function(position){
+                console.log(position);
+                var c = position.coords;
+
+                var latlng = new google.maps.LatLng(c.latitude, c.longitude);
+                if($scope.tab == $scope.tabs[0]){
+                    geocoder.geocode({'latLng': latlng}, function(results){
+                        if(results){
+                            $scope.address = results;
+                            $scope.specificAdd = results[0]['address_components'];
+                            $scope.$digest();
+                        }
+                    });
+                }
+                $scope.accuracy = c.accuracy;
+                if($scope.loc.lat != c.latitude || $scope.loc.lon != c.longitude){
+                    //console.log("Success");
+                    $scope.gotoLocation(c.latitude, c.longitude);
+                    $scope.position = position.coords;
+                }
             }
 
-            //console.log($scope.tab == $scope.tabs[0] ? 'getCurrentPosition' : 'watchPosition');
-            id = navigator.geolocation[$scope.tab == $scope.tabs[0] ? 'getCurrentPosition' : 'watchPosition'](function (position) {
-                //console.log(position);
-                var c = position.coords;
-                var latlng = new google.maps.LatLng(c.latitude, c.longitude);
+            var watchPosition = function () {
+                if(id) navigator.geolocation.clearWatch(id);
+                id = navigator.geolocation.watchPosition(success, error, option)
+            }
 
-            	geocoder.geocode({'latLng': latlng}, function(results){
-            		$scope.address = results;
-                    $scope.specificAdd = results[0]['address_components'];
-                    $scope.$digest();
-            	});
+            var calling = function(){
+                if($scope.tab == $scope.tabs[0]){
+                    if(stopTime) $interval.cancel(stopTime);
+                    navigator.geolocation.getCurrentPosition(success);
+                }else{
+                    stopTime = $interval(watchPosition, 2000);
+                }
+            }
+            calling();
 
-                $scope.accuracy = c.accuracy;
-                $scope.gotoLocation(c.latitude, c.longitude);
-                $scope.position = position.coords;
-            }, error, option);
 
-            //console.log(id);
             currentLocation = true;
             return true;
         }
@@ -211,7 +232,7 @@ app.directive("appMap", function () {
                 centerMarker = new google.maps.Marker({
                     position: new google.maps.LatLng(scope.center.lat, scope.center.lon),
                     map: map,
-                    animation: google.maps.Animation.DROP,
+                    animation: scope.$parent.tab == scope.$parent.tabs[0] ? google.maps.Animation.DROP : '',
 
                     strokeColor: '#FF0000',
                     strokeOpacity: 0.8,
