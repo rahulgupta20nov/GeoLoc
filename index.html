@@ -11,7 +11,7 @@
 <script src="js/angular.min.js"></script>
 <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true"></script>
 <script type="text/javascript" src="js/geoLoc.js"></script>
-<script src="phonegap.js"></script>
+<!--<script src="phonegap.js"></script>-->
 <h3>Google Maps</h3>
 <br><br><br>
 <ul class="nav nav-tabs" role="tablist">
@@ -47,13 +47,14 @@
 
 <div class="col-sm-12 map-wrapper" ng-class="{'sameLevelMap': tab == tabs[1]}">
     <app-map style="height:400px;margin-left:12px;box-shadow:0 3px 25px black;" center="loc"></app-map>
+    <br><br><br>
 </div>
 <!--<div class="sameLevelMap" ng-show="tab == tabs[1]">
     <app-map style="height:400px;margin-left:12px;box-shadow:0 3px 25px black;" center="loc"></app-map>
 </div>-->
 
 <!-- current location -->
-<br>
+
 <table class="table table-hover col-lg-2 col-md-2 col-sm-2" style="margin-left: 10px;">
     <tr class="info">
         <td class="col-sm-1 col-md-1 col-xs-1 col-lg-1">Lat:</td><td>{{loc.lat | lat:0}}</td>
