@@ -2,6 +2,7 @@ var app = angular.module("app", []);
 
 var currentLocation = false;
 app.controller("appCtrl", function ($scope, $interval) {
+    $scope.enableHighAccuracy = false;
     $scope.address = {};
     $scope.position = {};
     // current location
@@ -22,8 +23,7 @@ app.controller("appCtrl", function ($scope, $interval) {
     $scope.gotoCurrentLocation = function () {
         if ("geolocation" in navigator) {
             var option = {
-                enableHighAccuracy: false,
-                timeout: 15000,
+                enableHighAccuracy: $scope.enableHighAccuracy,
                 maximumAge: 2000
             };
             var error = function (error){
@@ -76,7 +76,7 @@ app.controller("appCtrl", function ($scope, $interval) {
                     if(stopTime) $interval.cancel(stopTime);
                     navigator.geolocation.getCurrentPosition(success);
                 }else{
-                    stopTime = $interval(watchPosition, 2000);
+                    stopTime = $interval(watchPosition, 3000);
                 }
             }
             calling();
