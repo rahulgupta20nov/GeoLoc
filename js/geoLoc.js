@@ -45,7 +45,7 @@ app.controller("appCtrl", function ($scope, $interval) {
                 calling();
             }
             var success = function(position){
-                console.log(position);
+                //console.log(position);
                 var c = position.coords;
 
                 var latlng = new google.maps.LatLng(c.latitude, c.longitude);
