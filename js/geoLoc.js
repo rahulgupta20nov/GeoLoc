@@ -12,7 +12,7 @@ app.controller("appCtrl", function ($scope, $interval, $http) {
     $scope.accuracy = 0;
     $scope.loc = [{id: 'abcd', lat: 23, lon: 79}];
     $scope.search = "";
-    $scope.tabs = ['Current Location', 'Watch Location', 'Navigation'];
+    $scope.tabs = ['Current Location', 'Watch Location', 'Track Device Location'];
     $scope.tab = $scope.tabs[0];
 
     $scope.changeTab = function (tab) {
@@ -89,7 +89,7 @@ app.controller("appCtrl", function ($scope, $interval, $http) {
             var success = function(position){
                 //console.log(position);
                 var c = position.coords;
-
+                //console.log($scope.enableHighAccuracy);
                 var latlng = new google.maps.LatLng(c.latitude, c.longitude);
                 if($scope.tab == $scope.tabs[0]){
                     geocoder.geocode({'latLng': latlng}, function(results){
@@ -103,7 +103,6 @@ app.controller("appCtrl", function ($scope, $interval, $http) {
                 $scope.accuracy = c.accuracy;
                 if($scope.loc.lat != c.latitude || $scope.loc.lon != c.longitude){
                     //console.log("Success");
-
                     $scope.gotoLocation([{id: 'abcd', lat: c.latitude, lon: c.longitude}]);
                     $scope.position = position.coords;
                 }
