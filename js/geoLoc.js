@@ -1,22 +1,64 @@
 var app = angular.module("app", []);
-
+var oldCenter = undefined;
 var currentLocation = false;
-app.controller("appCtrl", function ($scope, $interval) {
+//var global_server_url = "http://localhost/jacktrade/api/";
+var global_server_url = "http://3ms.dev1.jacktrade.net/jacktrade/api/";
+app.controller("appCtrl", function ($scope, $interval, $http) {
+    $scope.cities = [];
     $scope.enableHighAccuracy = false;
     $scope.address = {};
     $scope.position = {};
     // current location
     $scope.accuracy = 0;
-    $scope.loc = { lat: 23, lon: 79};
+    $scope.loc = [{id: 'abcd', lat: 23, lon: 79}];
     $scope.search = "";
     $scope.tabs = ['Current Location', 'Watch Location', 'Navigation'];
     $scope.tab = $scope.tabs[0];
 
     $scope.changeTab = function (tab) {
         $scope.tab = tab;
-        if(id) navigator.geolocation.clearWatch(id);
-        $scope.gotoCurrentLocation();
+        if(stopTime) $interval.cancel(stopTime);
+        stopTime = undefined;
+        if(tab != $scope.tabs[2]){
+            if(id) navigator.geolocation.clearWatch(id);
+            $scope.gotoCurrentLocation();
+        }else{
+            $scope.getAllLocation();
+        }
     }
+
+
+    $scope.getAllLocation = function () {
+        var url = global_server_url + 'geoLocApi.php/fetchAllLocations';
+        $scope.cities = [];
+        $http({
+            url: url,
+            method: 'POST'
+        }).success(function (data) {
+            angular.forEach(data.result, function (value, key) {
+                $scope.cities.push({id: key, lat: value.latitude, lon: value.longitute});
+            });
+            $scope.gotoLocation($scope.cities);
+        }).error(function (error) {
+            console.log(error);
+        });
+        stopTime = $interval(function () {
+            $scope.cities = [];
+            $http({
+                url: url,
+                method: 'POST'
+            }).success(function (data) {
+                angular.forEach(data.result, function (value, key) {
+                    $scope.cities.push({id: key, lat: value.latitude, lon: value.longitute});
+                });
+                $scope.gotoLocation($scope.cities);
+            }).error(function (error) {
+                console.log(error);
+            });
+        }, 3000);
+
+    }
+
     var geocoder = new google.maps.Geocoder();
     var id;
     var stopTime;
@@ -61,7 +103,8 @@ app.controller("appCtrl", function ($scope, $interval) {
                 $scope.accuracy = c.accuracy;
                 if($scope.loc.lat != c.latitude || $scope.loc.lon != c.longitude){
                     //console.log("Success");
-                    $scope.gotoLocation(c.latitude, c.longitude);
+
+                    $scope.gotoLocation([{id: 'abcd', lat: c.latitude, lon: c.longitude}]);
                     $scope.position = position.coords;
                 }
             }
@@ -76,6 +119,7 @@ app.controller("appCtrl", function ($scope, $interval) {
                     if(stopTime) $interval.cancel(stopTime);
                     navigator.geolocation.getCurrentPosition(success);
                 }else{
+                    watchPosition();
                     stopTime = $interval(watchPosition, 3000);
                 }
             }
@@ -88,11 +132,9 @@ app.controller("appCtrl", function ($scope, $interval) {
         return false;
     };
 
-    $scope.gotoLocation = function (lat, lon, acc) {
-        if ($scope.lat != lat || $scope.lon != lon) {
-            $scope.loc = { lat: lat, lon: lon, accuracy: acc};
-            if (!$scope.$$phase) $scope.$apply("loc");
-        }
+    $scope.gotoLocation = function (data) {
+        $scope.loc = data;
+        if (!$scope.$$phase) $scope.$apply("loc");
     };
     $scope.gotoCurrentLocation();
 
@@ -105,7 +147,7 @@ app.controller("appCtrl", function ($scope, $interval) {
                 if (status == google.maps.GeocoderStatus.OK) {
                     var loc = results[0].geometry.location;
                     $scope.search = results[0].formatted_address;
-                    $scope.gotoLocation(loc.lat(), loc.lng());
+                    $scope.gotoLocation([{id: 'abcd', lat: loc.lat(), lon: loc.lng()}]);
                 } else {
                     alert("Sorry, this search produced no results.");
                 }
@@ -181,23 +223,30 @@ app.directive("appMap", function () {
             scope.$watch("zoom", function () {
                 if (map && scope.zoom)
                     map.setZoom(scope.zoom * 1);
-                //console.log("Success");watchPosition
-                updateMarkers();
-                /*if (centerMarker != null) centerMarker.setMap(null);
-                centerMarker = new google.maps.Marker({
-                    position: new google.maps.LatLng(scope.center.lat, scope.center.lon),
-                    map: map
-                });*/
             });
+
             scope.$watch("center", function () {
-                if (map && scope.center)
-                    map.setCenter(getLocation(scope.center));
-                updateMarkers();
+                if(oldCenter != scope.$parent.tab)
+                    updateControl();
+                if (map && scope.center[0]){
+                    var total = scope.center[0];
+                    if(scope.center.length > 1){
+                        total = {lat: 0, lon: 0}
+                        angular.forEach(scope.center, function (value, key) {
+                            total['lat'] += parseFloat(value.lat);
+                            total['lon'] += parseFloat(value.lon);
+                        });
+                        total['lat'] = parseFloat(total.lat / scope.center.length);
+                        total['lon'] = parseFloat(total.lon / scope.center.length);
+                    }
+                    map.setCenter(getLocation(total));
+                }
+                updateMarkers(scope.center);
+                oldCenter = scope.$parent.tab;
             });
 
             // update the control
             function updateControl() {
-
                 // update size
                 if (scope.width) element.width(scope.width);
                 if (scope.height) element.height(scope.height);
@@ -206,7 +255,7 @@ app.directive("appMap", function () {
                 var options =
                 {
                     center: new google.maps.LatLng(23, 79),
-                    zoom: currentLocation ? 16 : 10,
+                    zoom: scope.$parent.tab != scope.$parent.tabs[2] ? currentLocation ? 16 : 10 : 4,
                     mapTypeId: "roadmap"
                 };
                 if (scope.center) options.center = getLocation(scope.center);
@@ -223,28 +272,31 @@ app.directive("appMap", function () {
             }
 
             // update map markers to match scope marker collection
-            function updateMarkers() {
-
+            function updateMarkers(markers) {
+                markers = markers ? markers : scope.center;
                 if(centerMarker != null) centerMarker.setMap(null);
-                //console.log(currentLocation)
-                //console.log(scope.$parent.tab == scope.$parent.tabs[0] ? (currentLocation ?
-                //    'location_map_pin_light_blue3_small.png' : '') : '50px-Wikimap-blue-dot.png')
-                centerMarker = new google.maps.Marker({
-                    position: new google.maps.LatLng(scope.center.lat, scope.center.lon),
-                    map: map,
-                    animation: scope.$parent.tab == scope.$parent.tabs[0] ? google.maps.Animation.DROP : '',
+                angular.forEach(markers, function (value, key) {
+                    var icon = "";
+                    if(scope.$parent.tab == scope.$parent.tabs[0]){
+                        icon = currentLocation ? 'images/location_map_pin_light_blue3_small.png' : '';
+                    }else if(scope.$parent.tab == scope.$parent.tabs[1]){
+                        icon = 'images/50px-Wikimap-blue-dot.png';
+                    }
+                    centerMarker = new google.maps.Marker({
+                        position: new google.maps.LatLng(value.lat, value.lon),
+                        map: map,
+                        animation: scope.$parent.tab == scope.$parent.tabs[0] ? google.maps.Animation.DROP : '',
 
-                    strokeColor: '#FF0000',
-                    strokeOpacity: 0.8,
-                    strokeWeight: 2,
-                    icon: scope.$parent.tab == scope.$parent.tabs[0] ? (currentLocation?
-                        //'http://maps.google.com/mapfiles/kml/pal4/icon25.png'
-                        'images/location_map_pin_light_blue3_small.png'
-                        : '') : 'images/50px-Wikimap-blue-dot.png',
-                    shadow: null,
-                    zIndex: 999,
-                    clickable: true
-                });
+                        strokeColor: '#FF0000',
+                        strokeOpacity: 0.8,
+                        strokeWeight: 2,
+                        icon: icon,
+                        shadow: null,
+                        zIndex: 999,
+                        clickable: true
+                    });
+                })
+
             }
 
             // convert current location to Google maps location
