@@ -55,23 +55,23 @@
 
 <!-- current location -->
 
-<table class="table table-hover col-lg-2 col-md-2 col-sm-2" style="margin-left: 10px;">
+<table class="table table-hover col-lg-2 col-md-2 col-sm-2" style="margin-left: 10px;" ng-repeat="l in loc">
     <tr class="info">
-        <td class="col-sm-1 col-md-1 col-xs-1 col-lg-1">Lat:</td><td>{{loc.lat | lat:0}}</td>
+        <td class="col-sm-1 col-md-1 col-xs-1 col-lg-1">Lat:</td><td>{{l.lat | lat:0}}</td>
     </tr>
     <tr class="info">
-        <td>Lon:</td><td>{{loc.lon | lon:0}}</td>
+        <td>Lon:</td><td>{{l.lon | lon:0}}</td>
     </tr>
     <tr class="info">
-        <td>Lat:</td><td>{{loc.lat}}</td>
+        <td>Lat:</td><td>{{l.lat}}</td>
     </tr>
     <tr class="info">
-        <td>Lon:</td><td>{{loc.lon}}</td>
+        <td>Lon:</td><td>{{l.lon}}</td>
     </tr>
-    <tr class="info">
+    <tr class="info" ng-show="tab != tabs[2]">
         <td>Accuracy:</td><td>{{accuracy}}</td>
     </tr>
-    <tr class="info">
+    <tr class="info" ng-show="tab != tabs[2]">
         <td>Address:</td><td class="col-lg-4 col-md-4 col-sm-4">{{address[0]['formatted_address']}}</td>
     </tr>
 </table>
