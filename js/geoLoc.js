@@ -1,8 +1,8 @@
 var app = angular.module("app", []);
 var oldCenter = undefined;
 var currentLocation = false;
-//var global_server_url = "http://localhost/jacktrade/api/";
-var global_server_url = "http://3ms.dev1.jacktrade.net/jacktrade/api/";
+var global_server_url = "http://localhost/jacktrade/api/";
+//var global_server_url = "http://3ms.dev1.jacktrade.net/jacktrade/api/";
 app.controller("appCtrl", function ($scope, $interval, $http) {
     $scope.cities = [];
     $scope.enableHighAccuracy = false;
